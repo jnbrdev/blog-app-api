@@ -1,4 +1,5 @@
 const Post = require("../models/Post");
+const User = require('../models/User'); // Adjust path as necessary
 
 // Get all posts
 module.exports.getAllPosts = async (req, res) => {
@@ -10,17 +11,35 @@ module.exports.getAllPosts = async (req, res) => {
     }
 };
 
-// Get a specific post by ID
+
 module.exports.getPost = async (req, res) => {
     const { postId } = req.params;
+
     try {
-        const post = await Post.findById(postId);
+        const post = await Post.findById(postId).lean(); // Use .lean() for performance
         if (!post) return res.status(404).json({ message: "Post not found" });
+
+        // Extract userIds from comments
+        const userIds = post.comments.map(comment => comment.userId);
+
+        // Fetch users with their emails
+        const users = await User.find({ _id: { $in: userIds } }, '_id email');
+
+        // Create a lookup map for userId to email
+        const userEmailMap = Object.fromEntries(users.map(user => [user._id.toString(), user.email]));
+
+        // Add email to each comment
+        post.comments = post.comments.map(comment => ({
+            ...comment,
+            email: userEmailMap[comment.userId.toString()] || null, // Null if email not found
+        }));
+
         res.status(200).json(post);
     } catch (error) {
         res.status(500).json({ message: "Error fetching post", error });
     }
 };
+
 
 // Add a new post
 module.exports.addPost = async (req, res) => {
