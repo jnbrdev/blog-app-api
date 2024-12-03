@@ -11,6 +11,16 @@ module.exports.getAllPosts = async (req, res) => {
     }
 };
 
+module.exports.getMyPosts = async (req, res) => {
+    try {
+        const userId = req.user.id; // Get userId from the logged-in user
+        const posts = await Post.find({ userId: userId }).sort({ createdAt: -1 });
+        res.status(200).json(posts);
+    } catch (error) {
+        res.status(500).json({ message: "Error fetching posts", error });
+    }
+};
+
 
 module.exports.getPost = async (req, res) => {
     const { postId } = req.params;
