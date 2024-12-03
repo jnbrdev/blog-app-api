@@ -44,6 +44,10 @@ const postSchema = new mongoose.Schema({
                 required: [true, 'Comment is required'],
                 trim: true,
             },
+            createdAt: {
+                type: Date,
+                default: Date.now,
+            },
         }
     ],
     createdAt: {
