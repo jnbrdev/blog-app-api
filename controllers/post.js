@@ -55,9 +55,22 @@ module.exports.getPost = async (req, res) => {
 module.exports.addPost = async (req, res) => {
     const { author, title, content, img } = req.body;
     const userId = req.user.id; // Get userId from the logged-in user
+
     try {
+        // Find the email of the user by their ID
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        // Add the email to the author object
+        author.email = user.email;
+
+        // Create a new post with the author email included
         const newPost = new Post({ userId, author, title, content, img });
         const savedPost = await newPost.save();
+        
+        // Respond with the saved post
         res.status(201).json(savedPost);
     } catch (error) {
         res.status(400).json({ message: "Error creating post", error });
