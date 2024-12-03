@@ -79,13 +79,13 @@ module.exports.addPost = async (req, res) => {
 
 // Update an existing post
 module.exports.updatePost = async (req, res) => {
-    const { title, content, img } = req.body;
+    const { title, content, img, author } = req.body;
     const { postId } = req.params;
     const userId = req.user.id; // Get userId from the logged-in user
     try {
         const updatedPost = await Post.findOneAndUpdate(
             { _id: postId, userId }, // Ensure the post belongs to the logged-in user
-            { title, content, img },
+            { title, content, img, author },
             { new: true, runValidators: true }
         );
         if (!updatedPost) return res.status(404).json({ message: "Post not found or unauthorized" });
