@@ -108,6 +108,17 @@ module.exports.deletePost = async (req, res) => {
     }
 };
 
+module.exports.deletePostAdmin = async (req, res) => {
+    const { postId } = req.params;
+    try {
+        const deletedPost = await Post.findOneAndDelete({ _id: postId }); // Ensure the post belongs to the logged-in user
+        if (!deletedPost) return res.status(404).json({ message: "Post not found or unauthorized" });
+        res.status(200).json({ message: "Post deleted successfully" });
+    } catch (error) {
+        res.status(500).json({ message: "Error deleting post", error });
+    }
+};
+
 // Add a comment to a post
 module.exports.addComment = async (req, res) => {
     const { postId } = req.params;

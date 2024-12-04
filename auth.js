@@ -1,5 +1,5 @@
 const jwt = require("jsonwebtoken")
-require('dotenv').config()
+const JWT_SECRET_KEY = "fitnessApp";
 
 
 module.exports.createAccessToken = (user) =>{
@@ -9,7 +9,7 @@ module.exports.createAccessToken = (user) =>{
         isAdmin: user.isAdmin
     }
 
-    return jwt.sign(data, process.env.JWT_SECRET_KEY, {})
+    return jwt.sign(data, JWT_SECRET_KEY, {})
 }
 
 module.exports.verify = (req, res, next) =>{
@@ -22,7 +22,7 @@ module.exports.verify = (req, res, next) =>{
         token = token.slice(7, token.length)
         console.log(token)
 
-        jwt.verify(token, process.env.JWT_SECRET_KEY, function(err, decodeToken){
+        jwt.verify(token, JWT_SECRET_KEY, function(err, decodeToken){
             if(err){
                 return res.send({
                     auth: "Failed",
