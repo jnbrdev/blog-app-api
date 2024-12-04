@@ -14,5 +14,6 @@ router.delete("/deletePost/:postId", verify, postController.deletePost);
 router.patch("/addComment/:postId", verify, postController.addComment);
 router.get("/getComments/:postId", postController.getComments);
 router.delete("/deleteComment/:postId/:commentId", verify, postController.deleteComment);
+router.delete("/deleteCommentAdmin/:postId/:commentId", verify, postController.deleteCommentAdmin);
 
 module.exports = router;

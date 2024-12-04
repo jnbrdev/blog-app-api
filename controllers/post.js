@@ -170,4 +170,27 @@ module.exports.deleteComment = async (req, res) => {
     }
 };
 
+module.exports.deleteCommentAdmin = async (req, res) => {
+    const { postId, commentId } = req.params;
+    const userId = req.user.id; // Get userId from the logged-in user
+    try {
+        const post = await Post.findById(postId);
+        if (!post) return res.status(404).json({ message: "Post not found" });
+
+        // Find the comment in the comments array
+        const commentIndex = post.comments.findIndex(comment => comment._id.toString() === commentId);
+        if (commentIndex === -1) {
+            return res.status(404).json({ message: "Comment not found or unauthorized" });
+        }
+
+        // Remove the comment from the comments array
+        post.comments.splice(commentIndex, 1);
+        await post.save();
+        
+        res.status(200).json({ message: "Comment deleted successfully", post });
+    } catch (error) {
+        res.status(500).json({ message: "Error deleting comment", error });
+    }
+};
+
 
