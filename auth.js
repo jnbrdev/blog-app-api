@@ -1,41 +1,68 @@
-const jwt = require("jsonwebtoken");
-const secret = "fitnessApp";
+const jwt = require("jsonwebtoken")
+require('dotenv').config()
 
 
-    module.exports.createAccessToken = (user) => {
+module.exports.createAccessToken = (user) =>{
+    const data = {
+        id: user._id,
+        email: user.email,
+        isAdmin: user.isAdmin
+    }
 
-        const data = {
-            id : user._id,
-            email : user.email,
-            isAdmin : user.isAdmin
-        };
+    return jwt.sign(data, process.env.JWT_SECRET_KEY, {})
+}
 
-        return jwt.sign(data, secret, {});
-        
-    };
+module.exports.verify = (req, res, next) =>{
+    console.log(req.headers.authorization);
+    let token = req.headers.authorization
+    if(typeof token === "undefined"){
+        return res.send({auth: "Failed. No Token"})
+    }else{
+        console.log(token)
+        token = token.slice(7, token.length)
+        console.log(token)
 
-    module.exports.verify = (req, res, next) => {
-        console.log(req.headers.authorization);
+        jwt.verify(token, process.env.JWT_SECRET_KEY, function(err, decodeToken){
+            if(err){
+                return res.send({
+                    auth: "Failed",
+                    message: err.message
+                })
+            }else{
+                console.log("result from verify method")
+                console.log(decodeToken)
 
-        let token = req.headers.authorization;
+                req.user = decodeToken;
 
-        if(typeof token === "undefined"){
-            return res.send({ auth: "Failed. No Token" });
-        } else {
-            token = token.slice(7, token.length);
-            jwt.verify(token, secret, function(err, decodedToken){
+                next()
+            }
+        })
+    }
+}
 
-                if(err){
-                    return res.send({
-                        auth: "Failed",
-                        message: err.message
-                    });
+module.exports.verifyAdmin = (req, res, next) =>{
+    console.log(req.user);
+    if(req.user.isAdmin){
+        next()
+    }else{
+        return res.status(403).send({
+            auth: "Failed",
+            message: "Action Forbidden"
+        })
+    }
+}
 
-                } else {
+module.exports.errorHandler = (err, req, res, next) => {
 
-                    req.user = decodedToken;
-                    next();
-                }
-            })
-        }
-    };
+	console.error(err);
+
+	const errorMessage = err.message || 'Internal Server Error';
+
+	res.json({
+		error: {
+			message: errorMessage,
+			errorCode: err.code || 'SERVER_ERROR',
+			details: err.details || null
+		}
+	})
+}
